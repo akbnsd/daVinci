@@ -1,0 +1,7 @@
+# binaries
+build/
+out/
+
+# editor / IDE configs
+.vscode/
+.vs/
