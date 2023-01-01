@@ -15,26 +15,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-#ifndef PCH_HPP
-#define PCH_HPP
 
-// stl headers
-#include <iostream>
-#include <string>
-#include <vector>
-#include <array>
-#include <list>
-#include <thread>
-#include <chrono>
-#include <memory>
+#include "pch.hpp"
 
 
-// log in debug only
-#ifndef NDEBUG
-    #define LG(...) std::cout << __VA_ARGS__
-#else
-    #define LG(...)
-#endif
-
-
-#endif // PCH_HPP
+int main(){
+    LG("DaVinci is currently under development\n\n\n");
+    return 0;
+}

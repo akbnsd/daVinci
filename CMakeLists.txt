@@ -1,4 +1,4 @@
-# This file is a part of  cmake-template
+# This file is a part of  DaVinci
 # Copyright (C) 2022  akshay bansod <aksh.bansod@yahoo.com>
 
 # This program is free software: you can redistribute it and/or modify
@@ -24,12 +24,13 @@ include(cmake/searchLib.cmake)
 
 # add required library names here
 # searchLib(aliasName   [libraries...])
+searchLib(portaudio portaudio)
 
 
 # replace projectNameHere 
-set(prjName projectNameHere)
-project(projectNameHere)
-generate(projectNameHere)
+set(prjName DaVinci)
+project(DaVinci)
+generate(DaVinci)
 
 include(cmake/tests.cmake)
 include(cmake/genDocs.cmake)
