@@ -16,7 +16,7 @@
 
 
 
-cmake_minimum_required(VERSION 3.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 set(CMAKE_CXX_STANDARD 17)
 
 include(cmake/generate.cmake)
@@ -24,7 +24,7 @@ include(cmake/searchLib.cmake)
 
 # add required library names here
 # searchLib(aliasName   [libraries...])
-searchLib(portaudio portaudio)
+searchLib(portaudio portaudiocpp)
 
 
 # replace projectNameHere 
