@@ -16,41 +16,30 @@
 
 
 
-#include "pch.hpp"
-#include "math.h"
-
-#include "audio/audio.hpp"
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
 
 
-
-#define PI 3.1415f
-
-// audio playback using audio context
+// creates a window and displays green color
+// if successful the glfw, glad  work successfully
 int main(){
-    
-    float* data = new float[512];
-    float* ptr = data;
-    for(int i = 0; i < 512; i++){
-        *(ptr++) = sin(4.0f * PI * (float)i / 512.0f);
+
+    glfwInit();
+    GLFWwindow* win = glfwCreateWindow(720, 480, "DaVinci - create window", NULL, NULL);
+
+    glfwMakeContextCurrent(win);
+    if(!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)){
+        LG("error initializing glad\n");
+        return 1;
     }
 
+    glClearColor(0.0840f, 0.840f, 0.185f, 1.0f);
 
-
-    bool status = audio::init();
-    audio::startPlayback();
-    audio::block* blk;
-    while (true)
-    {
-        blk = audio::getBlock();
-        
-        for(int i=0; i < 512; i++){
-            *(blk->data+i) = *(data+i);
-        }
-
-        audio::outQue->push(blk);
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    while(!glfwWindowShouldClose(win)){
+        glClear(GL_COLOR_BUFFER_BIT);
+        glfwSwapBuffers(win);
+        glfwWaitEvents();
     }
-    
 
     return 0;
 }
