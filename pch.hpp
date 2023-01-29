@@ -24,6 +24,7 @@
 #include <vector>
 #include <array>
 #include <list>
+#include <queue>
 #include <thread>
 #include <chrono>
 #include <memory>
