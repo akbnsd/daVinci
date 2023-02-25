@@ -55,15 +55,14 @@ int main(){
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-
         imguiRender();
-
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         ImGui::EndFrame();
-        glfwWaitEventsTimeout(16.0f);
+        glfwPollEvents();
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
         glfwSwapBuffers(win);
     }
 
