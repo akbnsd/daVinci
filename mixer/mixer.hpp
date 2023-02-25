@@ -48,6 +48,8 @@ public:
      * call stopRec() to terminate stream recording
      */
     void record(int stream);
+    
+    void stopRec();
 
     /**
      * @brief enable or disable a particular stream
