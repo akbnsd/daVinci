@@ -61,10 +61,16 @@ int recCallback(
     const PaStreamCallbackTimeInfo* timeInfo,
     PaStreamCallbackFlags statusFlags,
     void *userData )
-    {
+{
+    audio::block* blk = audio::getBlock();
+    audio::inQue->push(blk);
+
+    float* data = blk->data, *inp = (float*)input;
+    for(int i=0; i < frameCount; i++){
+        *(data++) = *(inp++);
+    }
 
     return paContinue;
-
 };
 
 

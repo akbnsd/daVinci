@@ -18,7 +18,7 @@
 #define AUDIO_HPP
 
 #include "pch.hpp"
-#define DEF_BLOCKSIZE 512
+#define DEF_BLOCKSIZE 4410
 
 class audio
 {
