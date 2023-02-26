@@ -26,26 +26,22 @@ class gpuHandler
 public:
     gpuHandler();
 
-    void append(int index, audio::block blk);
+    void append(int index, audio::block& blk);
 
+    void clear(int index, audio::block& blk);
 
     void setOffSet(int index=-1, int offset=DEF_BLOCKSIZE);
 
+    audio::block* getData(int index=0, int count=DEF_BLOCKSIZE, int offset=-1);
 
-    void mix();
-
-
-    audio::block getMixedData();
+    void mix(audio::block& blk);
 
     ~gpuHandler();
+    
+public:
+    unsigned int offsets[4], activeCount=1;
 
 private:
-
-    struct stateData
-    {
-        int offsets[4];
-        
-    };
-    unsigned int datas[4], sizes[4], offsets[4], fbo, fb_tex;
+    unsigned int datas[4], sizes[4], fbo, fb_tex;
 };
 #endif // GPU_HANDLER_HPP

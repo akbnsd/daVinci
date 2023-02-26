@@ -22,8 +22,8 @@
 
 
 bool IS_GL_READY=false, isGpuHandlerReady=false;
-unsigned int shaderId=0, vao=0 , bufs[2], stateVar, scalesVar;
-
+unsigned int shaderId=0, vao=0 , bufs[2], stateVar, scalesVar, weightsVar;
+audio::block DEF_NULL_BLOCK;
 
 void getGLReady();
 void getGpuHandlerReady();
@@ -37,12 +37,21 @@ gpuHandler::gpuHandler(){
     glGenTextures(4, datas);
     for(int i=0; i<4; i++){
         int texid = datas[i];
+        glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_1D, texid);
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, DEF_BLOCKSIZE, 0, GL_RED, GL_FLOAT, DEF_NULL_BLOCK.data);
         glGenerateMipmap(GL_TEXTURE_1D);
     }
+
+    glUseProgram(shaderId);
+    // maps samplers to texture units
+    glUniform1i(glGetUniformLocation(shaderId, "TEX0"), 0);
+    glUniform1i(glGetUniformLocation(shaderId, "TEX1"), 1);
+    glUniform1i(glGetUniformLocation(shaderId, "TEX2"), 2);
+    glUniform1i(glGetUniformLocation(shaderId, "TEX3"), 3);
 
 
     // setup framebuffer and its texture
@@ -52,7 +61,7 @@ gpuHandler::gpuHandler(){
     glBindTexture(GL_TEXTURE_1D, fb_tex);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_1D, 0, GL_R, DEF_BLOCKSIZE, 1, 0, GL_R, GL_FLOAT, NULL);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, DEF_BLOCKSIZE, 0, GL_RED, GL_FLOAT, NULL);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_1D, fb_tex, 0);
@@ -62,18 +71,13 @@ gpuHandler::gpuHandler(){
 
 
 
-void gpuHandler::mix()
+void gpuHandler::mix(audio::block& blk)
 {   
     int prev[4];
     glGetIntegerv(GL_VIEWPORT, prev);
 
-    #ifdef NDEBUG
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glViewport(0, 0, DEF_BLOCKSIZE, 1);
-    #else
-    glViewport(0, 100, DEF_BLOCKSIZE, 1);
-    #endif
-
 
     // setup rendering
     glBindVertexArray(vao);
@@ -95,27 +99,39 @@ void gpuHandler::mix()
 
 
     glUniform4f(scalesVar, 
-        (float) DEF_BLOCKSIZE / (float) sizes[0],
+        1.0f / (float) activeCount,
         (float) DEF_BLOCKSIZE / (float) sizes[1],
         (float) DEF_BLOCKSIZE / (float) sizes[2],
         (float) DEF_BLOCKSIZE / (float) sizes[3]);
+
+    glUniform4f(weightsVar, 
+        1.0f / (float) activeCount,
+        0.0f,
+        0.0f,
+        0.0f);
     
     // make draw calls
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, 0);
 
     // read data
-    // glReadPixels(0, 0, DEF_BLOCKSIZE, )
+    glBindTexture(GL_TEXTURE_1D, fb_tex);
+    glGetTexImage(GL_TEXTURE_1D, 0, GL_RED, GL_FLOAT, blk.data);
 
-
-    glViewport(prev[0], prev[1], prev[2], prev[3]);
-
-    #ifdef NDEBUG
+    // set framebuffer to default
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // in debug mode render data to screen
+    #ifndef NDEBUG
+    glViewport(0, 100, DEF_BLOCKSIZE, 1);
+    glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, 0);
     #endif
+
+    // re-adjust the viewport
+    glViewport(prev[0], prev[1], prev[2], prev[3]);
 }
 
 
-void gpuHandler::append(int index, audio::block blk)
+void gpuHandler::append(int index, audio::block& blk)
 {
     glActiveTexture(GL_TEXTURE0 + index);
     glBindTexture(GL_TEXTURE_1D, datas[index]);
@@ -123,6 +139,34 @@ void gpuHandler::append(int index, audio::block blk)
     sizes[index] += DEF_BLOCKSIZE;
 }
 
+void gpuHandler::clear(int index, audio::block& blk)
+{
+    glActiveTexture(GL_TEXTURE0 + index);
+    glBindTexture(GL_TEXTURE_1D, datas[index]);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, DEF_BLOCKSIZE, 0, GL_RED, GL_FLOAT, blk.data);
+    sizes[index] = DEF_BLOCKSIZE;
+}
+
+void gpuHandler::setOffSet(int index, int offset)
+{
+    // if index==-1 add offset to all
+    if(index==-1){
+        for(int i=0; i <4; i++){
+            offsets[i] += offset;
+        }
+        return;
+    }
+
+    offsets[index] += offset;
+}
+
+audio::block *gpuHandler::getData(int index, int count, int offset)
+{
+    audio::block* blk = audio::getBlock();
+    glBindTexture(GL_TEXTURE_1D, datas[index]);
+    glGetTextureSubImage(GL_TEXTURE_1D, 0, offset, 0, 0, count, 1, 1, GL_RED, GL_FLOAT, DEF_BLOCKSIZE * sizeof(float), blk->data);
+    return blk;
+}
 
 gpuHandler::~gpuHandler(){
 
@@ -137,7 +181,7 @@ gpuHandler::~gpuHandler(){
 
 // static calls
 
-const char *vertSrc = R"(
+const char* vertSrc = R"(
 #version 330 core
 
 layout(location=0) in vec2 pos;
@@ -159,6 +203,7 @@ out vec4 data;
 
 uniform vec4 param;
 uniform vec4 scales;
+uniform vec4 weights;
 uniform sampler1D TEX0;
 uniform sampler1D TEX1;
 uniform sampler1D TEX2;
@@ -166,16 +211,13 @@ uniform sampler1D TEX3;
 
 void main(){
 
-    data.x  = texture(TEX0, param.x + off * scales.x).x * 0.25f;
-    data.x += texture(TEX1, param.x + off * scales.y).x * 0.25f;
-    data.x += texture(TEX2, param.x + off * scales.z).x * 0.25f;
-    data.x += texture(TEX3, param.x + off * scales.w).x * 0.25f;
+    data.x  = texture(TEX0, param.x + off * scales.x).x * weights.x;
+    data.x += texture(TEX1, param.y + off * scales.y).x * weights.x;
+    data.x += texture(TEX2, param.z + off * scales.z).x * weights.x;
+    data.x += texture(TEX3, param.w + off * scales.w).x * weights.x;
 
-
-
-    data.x = texture(TEX0, off).x;
-    data.x = 1.0f;
-    data.yzw = vec3(0.0f, 0.0f, 1.0f);
+    data.yz = data.xx;
+    data.w = 1.0f;
 }
 
 )";
@@ -272,6 +314,7 @@ void getGpuHandlerReady(){
         // setup uniforms
         stateVar = glGetUniformLocation(shaderId, "param");
         scalesVar = glGetUniformLocation(shaderId, "scales");
+        weightsVar = glGetUniformLocation(shaderId, "weights");
     }
 
     isGpuHandlerReady = true;
