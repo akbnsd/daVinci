@@ -22,7 +22,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-const char* glsl_version = "#version 130";
+const char* glsl_version = "#version 330 core";
 
 
 void imguiRender(){
