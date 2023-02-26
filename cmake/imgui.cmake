@@ -27,9 +27,16 @@ add_library(imgui
     deps/imgui/imgui_demo.cpp
     deps/imgui/backends/imgui_impl_glfw.cpp
     deps/imgui/backends/imgui_impl_opengl3.cpp
+
+
+    # implot
+    deps/implot/implot_demo.cpp
+    deps/implot/implot_items.cpp
+    deps/implot/implot.cpp
 )
 
 target_include_directories(imgui PUBLIC
     deps/imgui/
     deps/imgui/backends/
+    deps/implot/
 )

@@ -12,3 +12,6 @@
 	path = deps/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "deps/implot"]
+	path = deps/implot
+	url = https://github.com/epezent/implot.git

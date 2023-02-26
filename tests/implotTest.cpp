@@ -18,18 +18,37 @@
 #include "glad/glad.h"
 #include "ui/imguiRenderer.hpp"
 #include "imgui.h"
+#include "implot.h"
 
 using namespace ImGui;
 
+int xs[] = { 0, 1, 2, 3};
+int ys[] = { 0, 1, 2, 3};
+float bgColor[4];
+double drag[3];
 void imguiScript(){
 
-    static bool showDemo=false;
+    static bool showDemo=false, implotDemo=false;
     Begin("tester");
-    if(Button("show demo window")) showDemo = !showDemo;
+    if(Button("show demo")) showDemo = !showDemo;
+    SameLine();
+    if(Button("show implot demo")) implotDemo = !implotDemo;
+    if(ColorPicker4("bg color", bgColor)){
+        glClearColor(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
+    }
+    
+    if(ImPlot::BeginPlot("data plot")){
+
+        ImPlot::PlotLine<int>("random", xs, ys, 4);
+        ImPlot::PlotInfLines<int>("vertical",ys, 1);
+        ImPlot::PlotLine<int>("rand", xs, ys, 4);
+        ImPlot::EndPlot();  
+    };
 
     End();
 
     if(showDemo) ShowDemoWindow();
+    if(implotDemo) ImPlot::ShowDemoWindow();
 };
 
 

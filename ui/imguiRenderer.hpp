@@ -16,6 +16,7 @@
 
 #ifndef IMGUI_RENDERER_HPP
 #define IMGUI_RENDERER_HPP
+
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
