@@ -32,6 +32,7 @@ void getImGuiReady(GLFWwindow* win){
 
     ImGui::CreateContext();
     ImPlot::CreateContext();
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui_ImplGlfw_InitForOpenGL(win, true);
     ImGui_ImplOpenGL3_Init(imgui_glsl_version);
     isImguiReady=true;

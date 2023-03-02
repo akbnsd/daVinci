@@ -14,4 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "mixer.hpp"
+
+
+#include "mixer/gpuHandler.hpp"
+
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
+
+
+int main(){
+
+    glfwInit();
+    audio::init();
+    GLFWwindow* win = glfwCreateWindow(720, 480, "DaVinci - gpuHandlerTest", NULL, NULL);
+    glfwMakeContextCurrent(win);
+
+    gpuHandler handler;
+    audio::block blk, result, *blkk;
+
+    for(int i=0; i<DEF_BLOCKSIZE; i++){
+        blk.data[i] = ((float)i) / (float) DEF_BLOCKSIZE;
+    }
+
+    handler.append(0, blk);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    while(!glfwWindowShouldClose(win)){
+        glClear(GL_COLOR_BUFFER_BIT);
+        blkk = handler.getData(0);
+        glfwSwapBuffers(win);
+        glfwWaitEvents();
+    }
+
+    return 0;
+};

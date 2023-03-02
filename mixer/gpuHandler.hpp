@@ -26,22 +26,29 @@ class gpuHandler
 public:
     gpuHandler();
 
+    void setActive(int index, int state=-1);
+    
     void append(int index, audio::block& blk);
 
-    void clear(int index, audio::block& blk);
+    void clearData(int index, audio::block& blk);
+
+    // remove these
+    void clearActiveState() { *(unsigned int*)states = 0; };
+    void enableAll() { *(unsigned int*)states = 0x01010101; };
 
     void setOffSet(int index=-1, int offset=DEF_BLOCKSIZE);
 
-    audio::block* getData(int index=0, int count=DEF_BLOCKSIZE, int offset=-1);
+    audio::block* getData(int index=-1, int offset=-1, int count=DEF_BLOCKSIZE);
 
     void mix(audio::block& blk);
 
     ~gpuHandler();
     
 public:
-    unsigned int offsets[4], activeCount=1;
+    unsigned int offsets[4] = {0, 0, 0, 0}, activeCount=0;
 
 private:
-    unsigned int datas[4], sizes[4], fbo, fb_tex;
+    unsigned int datas[4] = {0, 0, 0, 0}, sizes[4] = {0, 0, 0, 0}, fbo, fb_tex;
+    bool states[4] = {0, 0, 0, 0};
 };
 #endif // GPU_HANDLER_HPP

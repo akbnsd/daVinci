@@ -69,7 +69,10 @@ gpuHandler::gpuHandler(){
 
 }
 
-
+void gpuHandler::setActive(int index, int state)
+{
+    states[index] = (state == -1) ? !states[index] : state;
+}
 
 void gpuHandler::mix(audio::block& blk)
 {   
@@ -99,16 +102,19 @@ void gpuHandler::mix(audio::block& blk)
 
 
     glUniform4f(scalesVar, 
-        1.0f / (float) activeCount,
+        (float) DEF_BLOCKSIZE / (float) sizes[0],
         (float) DEF_BLOCKSIZE / (float) sizes[1],
         (float) DEF_BLOCKSIZE / (float) sizes[2],
         (float) DEF_BLOCKSIZE / (float) sizes[3]);
 
+    activeCount=0;
+    for(bool* dt=states; dt < states+4; dt++) activeCount += *dt;
     glUniform4f(weightsVar, 
-        1.0f / (float) activeCount,
-        0.0f,
-        0.0f,
-        0.0f);
+        states[0] ?  1.0f / (float) activeCount : 0.0f,
+        states[1] ?  1.0f / (float) activeCount : 0.0f,
+        states[2] ?  1.0f / (float) activeCount : 0.0f,
+        states[3] ?  1.0f / (float) activeCount : 0.0f
+    );
     
     // make draw calls
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, 0);
@@ -133,13 +139,15 @@ void gpuHandler::mix(audio::block& blk)
 
 void gpuHandler::append(int index, audio::block& blk)
 {
+    if(!sizes[index]) return clearData(index, blk);
+    
     glActiveTexture(GL_TEXTURE0 + index);
     glBindTexture(GL_TEXTURE_1D, datas[index]);
     glTextureSubImage1D(GL_TEXTURE_1D, 0, sizes[index], DEF_BLOCKSIZE, GL_RED, GL_FLOAT, blk.data);
     sizes[index] += DEF_BLOCKSIZE;
 }
 
-void gpuHandler::clear(int index, audio::block& blk)
+void gpuHandler::clearData(int index, audio::block& blk)
 {
     glActiveTexture(GL_TEXTURE0 + index);
     glBindTexture(GL_TEXTURE_1D, datas[index]);
@@ -160,11 +168,18 @@ void gpuHandler::setOffSet(int index, int offset)
     offsets[index] += offset;
 }
 
-audio::block *gpuHandler::getData(int index, int count, int offset)
+audio::block *gpuHandler::getData(int index, int offset, int count)
 {
+    if(offset == -1) offset = offsets[index];
     audio::block* blk = audio::getBlock();
-    glBindTexture(GL_TEXTURE_1D, datas[index]);
-    glGetTextureSubImage(GL_TEXTURE_1D, 0, offset, 0, 0, count, 1, 1, GL_RED, GL_FLOAT, DEF_BLOCKSIZE * sizeof(float), blk->data);
+    
+    if(index != -1){
+        clearActiveState();
+        setActive(index, true);
+    }
+    else enableAll();
+
+    mix(*blk);
     return blk;
 }
 
@@ -212,9 +227,9 @@ uniform sampler1D TEX3;
 void main(){
 
     data.x  = texture(TEX0, param.x + off * scales.x).x * weights.x;
-    data.x += texture(TEX1, param.y + off * scales.y).x * weights.x;
-    data.x += texture(TEX2, param.z + off * scales.z).x * weights.x;
-    data.x += texture(TEX3, param.w + off * scales.w).x * weights.x;
+    data.x += texture(TEX1, param.y + off * scales.y).x * weights.y;
+    data.x += texture(TEX2, param.z + off * scales.z).x * weights.z;
+    data.x += texture(TEX3, param.w + off * scales.w).x * weights.w;
 
     data.yz = data.xx;
     data.w = 1.0f;

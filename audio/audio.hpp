@@ -19,6 +19,7 @@
 
 #include "pch.hpp"
 #define DEF_BLOCKSIZE 4410
+#define SAMPLE_RATE   44100
 
 class audio
 {

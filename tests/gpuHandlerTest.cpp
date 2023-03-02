@@ -25,23 +25,23 @@
 int main(){
 
     glfwInit();
+    audio::init();
     GLFWwindow* win = glfwCreateWindow(720, 480, "DaVinci - gpuHandlerTest", NULL, NULL);
     glfwMakeContextCurrent(win);
 
     gpuHandler handler;
-    audio::block blk, result;
+    audio::block blk, result, *blkk;
 
     for(int i=0; i<DEF_BLOCKSIZE; i++){
         blk.data[i] = ((float)i) / (float) DEF_BLOCKSIZE;
     }
 
-    handler.clear(0, blk);
-    handler.clear(1, blk);
-    handler.clear(2, blk);
-    handler.clear(3, blk);
+    handler.clearData(0, blk);
+    handler.clearData(1, blk);
+    handler.clearData(2, blk);
+    handler.clearData(3, blk);
 
-
-
+    handler.setActive(0, true);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     while(!glfwWindowShouldClose(win)){

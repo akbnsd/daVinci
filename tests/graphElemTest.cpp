@@ -15,66 +15,61 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+#include "pch.hpp"
+#include "ui/graphElem.hpp"
+#include "math.h"
 #include "glad/glad.h"
+#include "GLFW/glfw3.h"
 #include "ui/imguiRenderer.hpp"
 #include "imgui.h"
 #include "implot.h"
 
-using namespace ImGui;
+#define TOPI 2 * 3.1415
 
-int xs[] = { 0, 1, 2, 3};
-int ys[] = { 0, 1, 2, 3};
-float bgColor[4];
-double drag[3];
 
+graphElem* elemnt;
 
 void imguiScript(){
 
-    static bool showDemo=false, implotDemo=false;
-    Begin("tester");
-    if(Button("show demo")) showDemo = !showDemo;
-    SameLine();
-    if(Button("show implot demo")) implotDemo = !implotDemo;
-    if(ColorPicker4("bg color", bgColor)){
-        glClearColor(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
-    }
-    
-    if(ImPlot::BeginPlot("data plot")){
-
-        ImPlot::PlotLine<int>("random", xs, ys, 4);
-        ImPlot::PlotInfLines<int>("vertical",ys, 1);
-        ImPlot::PlotLine<int>("rand", xs, ys, 4);
-        ImPlot::EndPlot();  
-    };
-
-    End();
-
-    if(showDemo) ShowDemoWindow();
-    if(implotDemo) ImPlot::ShowDemoWindow();
+    ImGui::Begin("win");
+    elemnt->render();
+    ImGui::End();
 };
 
 
-int main(){
+int main(){ 
+
+    audio::init();
+    audio::block* blk = audio::getBlock(), *block;
+    for(int i=0;i<DEF_BLOCKSIZE;i++){
+        blk->data[i] = sin(TOPI * (float) i / (float) DEF_BLOCKSIZE);
+    }
+
+
     glfwInit();
-    GLFWwindow* win = glfwCreateWindow(720, 480, "DaVinci - tester", NULL, NULL);
+    GLFWwindow* win = glfwCreateWindow(720, 480, "DaVinci - graphElemTest", NULL, NULL);
 
     glfwMakeContextCurrent(win);
     if(!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)){
         LG("error initializing glad\n");
         return 1;
     }
-
-    glClearColor(0.0840f, 0.840f, 0.185f, 1.0f);
+    
+    gpuHandler hand;
     imguiRenderer rend(win, imguiScript);
 
-    rend.setFps(60);
-    rend.beginRendering();
-    while (rend.isRenderingActive())
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    }
-
-    return 0;
+    graphElem elem(hand, 0, "demo plot");
+    elemnt = &elem;
     
+    hand.append(0, *blk);
 
+    glClearColor(0.0840f, 0.840f, 0.185f, 1.0f);
+
+    while(!glfwWindowShouldClose(win)){
+        glClear(GL_COLOR_BUFFER_BIT);
+        rend.render();
+        glfwSwapBuffers(win);
+        glfwPollEvents();
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
 }

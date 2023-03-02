@@ -35,8 +35,13 @@ int playBackCallback(
     PaStreamCallbackFlags statusFlags,
     void *userData )
 {
+    float* out = (float*) output;
+
     // check for data
-    if(!audio::outQue->size()) return paContinue;
+    if(!audio::outQue->size()) {
+        for(int i =0; i < frameCount; i++) *(out++) = 0.0f;
+        return paContinue;
+    }
 
     // fetch block
     audio::block* blk = audio::outQue->front();
@@ -44,7 +49,6 @@ int playBackCallback(
 
     float* data = blk->data;
     
-    float* out = (float*) output;
     for(int i =0 ; i < frameCount; i++){
         *(out++) = *(data++);
     };
