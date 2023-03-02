@@ -34,5 +34,6 @@ function(generate prjName)
 
     # add main executable
     add_executable(${prjName} ${sources} ${prjName}.cpp)
+    target_link_libraries(${prjName} i-${prjName})
 
 endfunction(generate prjName)

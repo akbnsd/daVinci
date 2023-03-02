@@ -14,28 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#ifndef IMGUI_RENDERER_HPP
+#define IMGUI_RENDERER_HPP
 
-#ifndef PCH_HPP
-#define PCH_HPP
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
 
-// stl headers
-#include <iostream>
-#include <string>
-#include <vector>
-#include <array>
-#include <list>
-#include <queue>
-#include <thread>
-#include <chrono>
-#include <memory>
+#define DEFAULT_FRAME_DELAY 1000 / 60
 
+class imguiRenderer
+{
+public:    
+    imguiRenderer(GLFWwindow* win,  void (*func)());
 
-// log in debug only
-#ifndef NDEBUG
-    #define LG(...) std::cout << __VA_ARGS__
-#else
-    #define LG(...)
-#endif
+    void render();
 
+    void beginRendering();
+    void stopRendering();
 
-#endif // PCH_HPP
+    bool isRenderingActive() { return shouldRender;}
+
+    void setFps(int fps=30);
+
+private:
+    std::chrono::milliseconds frameDelay = std::chrono::milliseconds(DEFAULT_FRAME_DELAY);
+    std::thread* renderThread=0;
+    bool shouldRender = true;
+private:
+
+    void static stat_render(imguiRenderer* rend);
+
+    void (*script)();
+    GLFWwindow* window;
+};
+
+#endif  //IMGUI_RENDERER_HPP

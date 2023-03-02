@@ -16,34 +16,9 @@
 
 
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-set(CMAKE_CXX_STANDARD 17)
-
-
-# platform detection
-if(WIN32)
-    add_compile_definitions(_WIN32)
-elseif(APPLE)
-    add_compile_definitions(_APPLE)
-elseif(UNIX)
-    add_compile_definitions(_LINUX)
-endif()
-
-include(cmake/generate.cmake)
-include(cmake/searchLib.cmake)
-
-# add required library names here
-# searchLib(aliasName   [libraries...])
-searchLib(portaudio portaudiocpp)
-searchLib(glfw glfw3)
-searchLib(glad glad)
-searchLib(imgui imgui)
-
-
-# replace projectNameHere 
-set(prjName DaVinci)
-project(DaVinci)
-generate(DaVinci)
-
-include(cmake/tests.cmake)
-include(cmake/genDocs.cmake)
+# cmake build configuration for source build of glfw library
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build the GLFW example programs")
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "Build the GLFW test programs")
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "Build the GLFW documentation")
+set(GLFW_INSTALL OFF CACHE BOOL "Generate installation target")
+add_subdirectory(deps/glfw)

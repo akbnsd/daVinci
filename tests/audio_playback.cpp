@@ -15,27 +15,42 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-#ifndef PCH_HPP
-#define PCH_HPP
 
-// stl headers
-#include <iostream>
-#include <string>
-#include <vector>
-#include <array>
-#include <list>
-#include <queue>
-#include <thread>
-#include <chrono>
-#include <memory>
+#include "pch.hpp"
+#include "math.h"
+
+#include "audio/audio.hpp"
 
 
-// log in debug only
-#ifndef NDEBUG
-    #define LG(...) std::cout << __VA_ARGS__
-#else
-    #define LG(...)
-#endif
+
+#define PI 3.1415f
+
+// audio playback using audio context
+int main(){
+    
+    float* data = new float[DEF_BLOCKSIZE];
+    float* ptr = data;
+    for(int i = 0; i < DEF_BLOCKSIZE; i++){
+        *(ptr++) = sin(210 * PI * (float)i / DEF_BLOCKSIZE);
+    }
 
 
-#endif // PCH_HPP
+
+    bool status = audio::init();
+    audio::startPlayback();
+    audio::block* blk;
+    while (true)
+    {
+        blk = audio::getBlock();
+        
+        for(int i=0; i < DEF_BLOCKSIZE; i++){
+            *(blk->data+i) = *(data+i);
+        }
+
+        audio::outQue->push(blk);
+        std::this_thread::sleep_for(std::chrono::milliseconds(46));
+    }
+    
+
+    return 0;
+}
