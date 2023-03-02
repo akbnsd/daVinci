@@ -170,14 +170,13 @@ void gpuHandler::setOffSet(int index, int offset)
 
 audio::block *gpuHandler::getData(int index, int offset, int count)
 {
-    if(offset == -1) offset = offsets[index];
     audio::block* blk = audio::getBlock();
     
     if(index != -1){
         clearActiveState();
         setActive(index, true);
+        if(offset != -1) offsets[index] = offset;
     }
-    else enableAll();
 
     mix(*blk);
     return blk;

@@ -7,14 +7,13 @@
 class graphElem
 {
 public:
-    graphElem(gpuHandler& hand, int index, const char* title);
-
+    graphElem(gpuHandler* hand, int index, std::string);
     void render();
 private:
 
-    gpuHandler& handler;
+    gpuHandler* handler;
     int srcIndex;
-    const char* label;
+    std::string scrollLabel,plotLabel,label;
     float toff=0;
 
     static float xs[DEF_BLOCKSIZE];

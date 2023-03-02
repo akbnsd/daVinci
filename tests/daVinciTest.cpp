@@ -38,7 +38,7 @@ int main(){
 
     int monitorWidth=0, monitorHeight=0;
     glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), NULL, NULL, &monitorWidth, &monitorHeight);
-    GLFWwindow* window =  glfwCreateWindow(monitorWidth, monitorHeight, "Davinci Test", NULL, NULL);
+    GLFWwindow* window =  glfwCreateWindow(monitorWidth, monitorHeight, "Davinci Test", glfwGetPrimaryMonitor(), NULL);
 
     glfwMakeContextCurrent(window);
     if(!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)){

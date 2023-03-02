@@ -46,9 +46,9 @@ public:
     
 public:
     unsigned int offsets[4] = {0, 0, 0, 0}, activeCount=0;
+    bool states[4] = {0, 0, 0, 0};
 
 private:
     unsigned int datas[4] = {0, 0, 0, 0}, sizes[4] = {0, 0, 0, 0}, fbo, fb_tex;
-    bool states[4] = {0, 0, 0, 0};
 };
 #endif // GPU_HANDLER_HPP
