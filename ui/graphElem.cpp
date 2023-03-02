@@ -27,11 +27,13 @@ ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels;
 
 void graphElem::render(){
     if(!Begin(label.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar)) return;
+
+    isActive = ImGui::IsWindowFocused();
     BeginPlot(label.c_str(), ImVec2(-1, 0), ImPlotFlags_NoTitle);
 
     audio::block* blk = handler->getData(srcIndex);
  
-    SetupAxes(NULL, NULL, flags, flags | ImPlotAxisFlags_AutoFit);
+    SetupAxes(NULL, NULL, flags, ImPlotAxisFlags_AutoFit);
     SetupAxisLimits(ImAxis_X1, 0, 1, ImGuiCond_Always);
     SetNextFillStyle(IMPLOT_AUTO_COL,0.5f);
 

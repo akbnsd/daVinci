@@ -30,6 +30,7 @@ public:
     
     void append(int index, audio::block& blk);
 
+    void setToClear(int index=0) { sizes[index] = 0;};
     void clearData(int index, audio::block& blk);
 
     // remove these
@@ -47,8 +48,8 @@ public:
 public:
     unsigned int offsets[4] = {0, 0, 0, 0}, activeCount=0;
     bool states[4] = {0, 0, 0, 0};
-
-private:
+    float scales[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     unsigned int datas[4] = {0, 0, 0, 0}, sizes[4] = {0, 0, 0, 0}, fbo, fb_tex;
+
 };
 #endif // GPU_HANDLER_HPP

@@ -9,6 +9,8 @@ class graphElem
 public:
     graphElem(gpuHandler* hand, int index, std::string);
     void render();
+
+    bool isActive=false;
 private:
 
     gpuHandler* handler;

@@ -102,10 +102,10 @@ void gpuHandler::mix(audio::block& blk)
 
 
     glUniform4f(scalesVar, 
-        (float) DEF_BLOCKSIZE / (float) sizes[0],
-        (float) DEF_BLOCKSIZE / (float) sizes[1],
-        (float) DEF_BLOCKSIZE / (float) sizes[2],
-        (float) DEF_BLOCKSIZE / (float) sizes[3]);
+        (float) DEF_BLOCKSIZE / (float) sizes[0] * scales[0],
+        (float) DEF_BLOCKSIZE / (float) sizes[1] * scales[1],
+        (float) DEF_BLOCKSIZE / (float) sizes[2] * scales[2],
+        (float) DEF_BLOCKSIZE / (float) sizes[3] * scales[3]);
 
     activeCount=0;
     for(bool* dt=states; dt < states+4; dt++) activeCount += *dt;

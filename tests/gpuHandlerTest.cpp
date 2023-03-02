@@ -36,10 +36,7 @@ int main(){
         blk.data[i] = ((float)i) / (float) DEF_BLOCKSIZE;
     }
 
-    handler.clearData(0, blk);
-    handler.clearData(1, blk);
-    handler.clearData(2, blk);
-    handler.clearData(3, blk);
+    handler.append(0, blk);
 
     handler.setActive(0, true);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -47,6 +44,7 @@ int main(){
     while(!glfwWindowShouldClose(win)){
         glClear(GL_COLOR_BUFFER_BIT);
         handler.mix(result);
+        handler.append(0, blk);
         glfwSwapBuffers(win);
         glfwWaitEvents();
     }

@@ -15,7 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-
+#define TOPI 6.283f
+#include "math.h"
 #include "implot.h"
 #include "ui/graphElem.hpp"
 
@@ -24,7 +25,8 @@ using namespace ImPlot;
 
 int WINDOWFLAGS = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar;
 bool record=false, playback=false, superposePlay=false, superPoseStates[4] = {0, 0, 0, 0};
-int recordSink=0, playbackSrc=0;
+int recordSink=0, playbackSrc=0, clearIndex=0,sineDest=0;
+float freq=0.1f;
 gpuHandler& hand = *handler;
 audio::block* blk;
 float timeCount=0;
@@ -77,11 +79,16 @@ void imguiScript(){
         playback = !playback;
     };
 
-    SameLine();
-    PushItemWidth(-1);
+    SameLine();PushItemWidth(-1);
     SliderInt("from", &playbackSrc, 0, 3);
 
-    // LabelText("Enable / Disable:");
+
+    if(Button("Clear")) handler->setToClear(clearIndex);
+    SameLine();PushItemWidth(-1);
+    SliderInt("clearIndex", &clearIndex, 0, 3);
+
+    Spacing();
+    Text("Toggle Streams");
     Checkbox("0", superPoseStates + 0); SameLine();
     Checkbox("1", superPoseStates + 1); SameLine();
     Checkbox("2", superPoseStates + 2); SameLine();
@@ -91,6 +98,23 @@ void imguiScript(){
         superposePlay ? audio::stopPlayback() : audio::startPlayback();
         superposePlay = !superposePlay;
     };
+
+
+    Spacing();
+    Text("add sine wave");
+
+    PushItemWidth(-1);
+    SliderInt("sine to", &sineDest, 0, 3);
+    if(Button("add sine wave")){
+        audio::block* blk = audio::getBlock();
+        for(int i =0; i < DEF_BLOCKSIZE; i++){
+            blk->data[i] = sinf(TOPI * freq * i / SAMPLE_RATE);
+        }
+        handler->clearData(sineDest, *blk);
+        audio::dumpQue->push(blk);
+    }
+    SameLine();
+    DragFloat("frequency", &freq, 1.0f, 0.0f, FLT_MAX); SameLine();
 
     End();
 
@@ -107,22 +131,17 @@ void imguiScript(){
         }
     }
 
-    else if(playback && audio::outQue->size() <=4){
-        for(int i=0; i < 4; i++){
-            blk = handler->getData(playbackSrc);
-            audio::outQue->push(blk);
-            handler->setOffSet(playbackSrc);
-        }
+    else if(playback && !audio::outQue->size()){
+        blk = handler->getData(playbackSrc);
+        audio::outQue->push(blk);
+        handler->setOffSet(playbackSrc);
     }
 
-    else if(record && audio::inQue->size() >= 3){
-        for(int i=audio::inQue->size(); i>0; i--){
+    else if(record && audio::inQue->size()){
+            handler->offsets[recordSink]= handler->sizes[recordSink];
             blk = audio::inQue->front();
             audio::inQue->pop();
             handler->append(recordSink, *blk);
-        }
-
-        handler->offsets[recordSink]=0;
     }
 
 
