@@ -58,7 +58,7 @@ int main(){
     gpuHandler hand;
     imguiRenderer rend(win, imguiScript);
 
-    graphElem elem(hand, 0, "demo plot");
+    graphElem elem(&hand, 0, "demo plot");
     elemnt = &elem;
     
     hand.append(0, *blk);
