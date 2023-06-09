@@ -26,7 +26,7 @@ using namespace ImPlot;
 int WINDOWFLAGS = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar;
 bool record=false, playback=false, superposePlay=false, superPoseStates[4] = {0, 0, 0, 0};
 int recordSink=0, playbackSrc=0, clearIndex=0,sineDest=0;
-float freq=0.1f;
+float freq=100.0f, speed=1.0f;
 gpuHandler& hand = *handler;
 audio::block* blk;
 float timeCount=0;
@@ -121,20 +121,19 @@ void imguiScript(){
     renderPlots();
 
     if(playback) handler->setOffSet(playbackSrc, dt * SAMPLE_RATE);
+    if(superposePlay) handler->setOffSet(-1, dt * SAMPLE_RATE);
 
-    if(superposePlay && audio::outQue->size() <=4){
+    if(superposePlay && !audio::outQue->size()){
         memcpy(handler->states, superPoseStates, 4 * sizeof(bool));
-        for(int i=0; i < 4; i++){
-            blk = handler->getData();
-            audio::outQue->push(blk);
-            handler->setOffSet();
-        }
+        blk = handler->getData();
+        audio::outQue->push(blk);
+        timeCount=0;
     }
 
     else if(playback && !audio::outQue->size()){
         blk = handler->getData(playbackSrc);
         audio::outQue->push(blk);
-        handler->setOffSet(playbackSrc);
+        timeCount=0;
     }
 
     else if(record && audio::inQue->size()){
@@ -142,6 +141,7 @@ void imguiScript(){
             blk = audio::inQue->front();
             audio::inQue->pop();
             handler->append(recordSink, *blk);
+            audio::dumpQue->push(blk);
     }
 
 
