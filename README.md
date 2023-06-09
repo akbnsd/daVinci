@@ -8,7 +8,7 @@
 <br />
 <div align="center">
 
-  <h3 align="center">Thermostat Simulator</h3>
+  <h3 align="center">DaVinci - Waveform superpositon Simulator</h3>
 
   <p align="center">
     Simulate davinci working in different environments
